@@ -11,7 +11,7 @@ import { scoreConditions } from "./src/scoring.js";
 const examples = [
   { name: "perfect day", expected: 100, hour: { temperature: -6, windSpeed: 8, snowfall: 0, visibility: 20000 } },
   { name: "light fresh snow", expected: 100, hour: { temperature: -4, windSpeed: 10, snowfall: 0.5, visibility: 8000 } }, // 105 -> capped at 100
-  { name: "windy", expected: 70, hour: { temperature: -5, windSpeed: 45, snowfall: 0, visibility: 20000 } },
+  { name: "windy", expected: 20, hour: { temperature: -5, windSpeed: 45, snowfall: 0, visibility: 20000 } },
   { name: "foggy", expected: 75, hour: { temperature: -5, windSpeed: 5, snowfall: 0, visibility: 500 } },
   { name: "warm day", expected: 40, hour: { temperature: 7, windSpeed: 5, snowfall: 0, visibility: 20000 } },
   { name: "storm", expected: 0, hour: { temperature: 7, windSpeed: 70, snowfall: 4, visibility: 100 } },

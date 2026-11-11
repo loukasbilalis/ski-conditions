@@ -21,10 +21,10 @@ export const RULES = {
 
   // Wind speed in km/h. Strong wind is unpleasant and can close the lifts.
   windSpeed: [
-    { above: 60, penalty: 50 }, // lifts usually closed
-    { above: 40, penalty: 30 },
-    { above: 25, penalty: 15 },
-    { above: 15, penalty: 5 },
+    { above: 60, penalty: 100 }, // lifts closed: not skiable
+    { above: 40, penalty: 80 }, // lifts likely closed
+    { above: 25, penalty: 35 },
+    { above: 15, penalty: 10 },
   ],
 
   // Visibility in metres. Fog makes it hard to see the slope.
