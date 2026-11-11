@@ -9,7 +9,8 @@
 //   elevation - approximate TOP LIFT height in metres. Open-Meteo uses this
 //               to adjust the temperature for mountain height.
 //
-// NOTE: coordinates and elevations are approximate. Check them on a map
+// NOTE: elevations for Parnassos (2250), Kalavryta (2340) and Vasilitsa (2249)
+// come from snowreport.gr. Velouchi (2000) is still my estimate. Coordinates are approximate.
 // and edit the numbers if you know better values.
 
 export const resorts = [
@@ -25,7 +26,7 @@ export const resorts = [
     name: "Kalavryta",
     latitude: 38.0,
     longitude: 22.2,
-    elevation: 2300,
+    elevation: 2340,
   },
   {
     id: "velouchi",
@@ -39,6 +40,6 @@ export const resorts = [
     name: "Vasilitsa",
     latitude: 40.03,
     longitude: 21.08,
-    elevation: 2100,
+    elevation: 2249,
   },
 ];
