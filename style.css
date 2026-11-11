@@ -48,6 +48,18 @@ h1 {
   color: #b91c1c;
 }
 
+/* The daily summary line under each date */
+.summary {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+/* VETO label in an hour box */
+.hour .tag {
+  font-weight: 600;
+}
+
 /* The row of hours: 8 columns on a wide screen, 4 on a phone */
 .hours {
   display: grid;
