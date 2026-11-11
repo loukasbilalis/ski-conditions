@@ -8,6 +8,7 @@ import { getWeather } from "./src/weather.js";
 import { CONFIG, validateConfig } from "./src/config.js";
 import { interpolate, scoreConditions, scoreForecast, resolveSettings } from "./src/scoring.js";
 import { summarizeDay, summarizeForecast } from "./src/summary.js";
+import { getMockWeather } from "./src/mockWeather.js"; // TEMPORARY MOCK
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -147,6 +148,14 @@ check("...with average 80", summary.bestWindow.average === 80);
 check("worst hour is 09:00 with score 10", summary.worstHour.time.endsWith("09:00") && summary.worstHour.score === 10);
 check("veto reasons: wind, 2 hours", summary.vetoes.length === 1 && summary.vetoes[0].id === "wind" && summary.vetoes[0].hours === 2);
 check("a day split gives one summary per date", summarizeForecast(results).length === 2);
+
+// ---------------------------------------------------------------
+console.log("\nTEMPORARY mock weather:");
+const mockHours = await getMockWeather(resorts[0]);
+const mockScored = scoreForecast(mockHours, resorts[0]);
+check("mock has 72 hours, 16 of them scored", mockHours.length === 72 && mockScored.length === 16, `${mockHours.length} / ${mockScored.length}`);
+check("mock has no vetoes", mockScored.every((r) => r.vetoes.length === 0));
+check("mock scores are all 95 (limited by cold comfort 80 + safety margin 15)", mockScored.every((r) => r.score === 95), [...new Set(mockScored.map((r) => r.score))].join(","));
 
 // ---------------------------------------------------------------
 console.log("\nLive forecast (needs internet):");

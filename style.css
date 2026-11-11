@@ -55,6 +55,37 @@ h1 {
   color: #334155;
 }
 
+/* TEMPORARY MOCK toggle */
+.mock-box {
+  max-width: 900px;
+  margin: 0 auto 16px;
+}
+
+.mock-box button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid #94a3b8;
+  background: white;
+  cursor: pointer;
+}
+
+.mock-box button[aria-pressed="true"] {
+  border-color: #c2410c;
+  background: #ffedd5;
+  font-weight: 600;
+}
+
+.mock-banner {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #ffedd5;
+  border: 1px solid #c2410c;
+  color: #7c2d12;
+  font-weight: 600;
+}
+
 /* VETO label in an hour box */
 .hour .tag {
   font-weight: 600;

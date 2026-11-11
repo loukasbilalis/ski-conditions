@@ -7,6 +7,7 @@ import { getWeather } from "./weather.js";
 import { scoreForecast, resolveSettings } from "./scoring.js";
 import { summarizeForecast } from "./summary.js";
 import { CONFIG } from "./config.js";
+import { getMockWeather } from "./mockWeather.js"; // TEMPORARY MOCK
 
 // Which colour class a score gets (the classes are defined in style.css).
 function scoreClass(score) {
@@ -124,31 +125,74 @@ function fillCard(card, scoredHours) {
   }
 }
 
-// Build one card per resort, then load each resort's weather.
-for (const resort of resorts) {
-  const settings = resolveSettings(resort);
-  const card = makeElement("section", "card");
-  card.append(
-    makeElement("h2", "", resort.name),
-    makeElement(
-      "p",
-      "meta",
-      `Base ${resort.elevation} m · lifts ${settings.liftHours.start}:00-${settings.liftHours.end}:00 · ` +
-        `wind limit ${settings.windLimit} km/h · minimum snow depth ${settings.minSnowDepth} m`
-    )
-  );
-  const status = makeElement("p", "", "Loading…");
-  card.append(status);
-  document.getElementById("resorts").append(card);
-
-  // The resorts load at the same time, and a failure in one does not stop the others.
-  getWeather(resort)
-    .then((hours) => {
-      status.remove();
-      fillCard(card, scoreForecast(hours, resort));
-    })
-    .catch((error) => {
-      status.className = "error";
-      status.textContent = `Could not load weather: ${error.message}`;
-    });
+// Real weather is fetched once per resort and remembered, so switching the
+// mock on and off doesn't download everything again.
+const realWeather = new Map();
+function getRealWeatherCached(resort) {
+  if (!realWeather.has(resort.id)) {
+    const request = getWeather(resort);
+    realWeather.set(resort.id, request);
+    request.catch(() => realWeather.delete(resort.id)); // after an error, try again next time
+  }
+  return realWeather.get(resort.id);
 }
+
+// Counts every redraw. If you click the toggle while data is still loading,
+// the older, slower draw sees that it is out of date and stops.
+let drawNumber = 0;
+
+// Draw all the resort cards, from real weather or (TEMPORARY MOCK) made-up weather.
+function drawAll(useMock) {
+  const thisDraw = ++drawNumber;
+  const container = document.getElementById("resorts");
+  container.replaceChildren(); // empty the box
+
+  for (const resort of resorts) {
+    const settings = resolveSettings(resort);
+    const card = makeElement("section", "card");
+    card.append(
+      makeElement("h2", "", resort.name),
+      makeElement(
+        "p",
+        "meta",
+        `Base ${resort.elevation} m · lifts ${settings.liftHours.start}:00-${settings.liftHours.end}:00 · ` +
+          `wind limit ${settings.windLimit} km/h · minimum snow depth ${settings.minSnowDepth} m`
+      )
+    );
+    const status = makeElement("p", "", "Loading…");
+    card.append(status);
+    container.append(card);
+
+    // The resorts load at the same time, and a failure in one does not stop the others.
+    const request = useMock ? getMockWeather(resort) : getRealWeatherCached(resort);
+    request
+      .then((hours) => {
+        if (thisDraw !== drawNumber) return; // out of date
+        status.remove();
+        fillCard(card, scoreForecast(hours, resort));
+      })
+      .catch((error) => {
+        if (thisDraw !== drawNumber) return;
+        status.className = "error";
+        status.textContent = `Could not load weather: ${error.message}`;
+      });
+  }
+}
+
+// ---- TEMPORARY MOCK: the toggle button ----
+const mockButton = document.getElementById("mock-toggle");
+const mockBanner = document.getElementById("mock-banner");
+
+function setMock(on) {
+  mockButton.setAttribute("aria-pressed", String(on));
+  mockButton.textContent = `Mock perfect weather: ${on ? "ON" : "OFF"}`;
+  mockBanner.hidden = !on;
+  drawAll(on);
+}
+
+mockButton.addEventListener("click", () => {
+  setMock(mockButton.getAttribute("aria-pressed") !== "true");
+});
+
+// Open the page with ?mock=1 to start with the mock switched on.
+setMock(new URLSearchParams(location.search).get("mock") === "1");

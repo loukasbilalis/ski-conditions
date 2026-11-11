@@ -22,6 +22,15 @@
       </p>
     </header>
 
+    <!-- TEMPORARY MOCK: switch between real and made-up perfect weather.
+         You can also open the page with ?mock=1 at the end of the address. -->
+    <div class="mock-box">
+      <button id="mock-toggle" type="button" aria-pressed="false">Mock perfect weather: OFF</button>
+      <p id="mock-banner" class="mock-banner" hidden>
+        MOCK DATA: made-up perfect weather, not a real forecast.
+      </p>
+    </div>
+
     <!-- main.js fills this empty box with one card per resort -->
     <main id="resorts"></main>
 
