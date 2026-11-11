@@ -5,9 +5,10 @@
 
 const API_URL = "https://api.open-meteo.com/v1/forecast";
 
-// How many hours ahead to fetch, starting from the current hour.
-// Change this number later to expand the forecast (e.g. 72 or 168).
-const FORECAST_HOURS = 48;
+// How many days to fetch: today and tomorrow = 2 days = 48 hours.
+// Days start at midnight, so every skiing hour (09:00-16:00) of today is included.
+// Change this number later to expand the forecast (e.g. 3 or 7).
+const FORECAST_DAYS = 2;
 
 /**
  * Get hourly weather for one resort.
@@ -28,7 +29,7 @@ export async function getWeather(resort) {
     latitude: resort.latitude,
     longitude: resort.longitude,
     hourly: "temperature_2m,wind_speed_10m,snowfall,visibility",
-    forecast_hours: FORECAST_HOURS,
+    forecast_days: FORECAST_DAYS,
     timezone: "Europe/Athens",
   });
 

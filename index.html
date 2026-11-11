@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Makes the page fit phone screens -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Greek Ski Conditions</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Greek Ski Conditions</h1>
+      <p>Hourly scores (0-100) from 09:00 to 16:00, today and tomorrow.</p>
+      <p class="legend">
+        <span class="swatch good"></span> 70-100 good
+        <span class="swatch ok"></span> 40-69 so-so
+        <span class="swatch poor"></span> 0-39 poor
+      </p>
+    </header>
+
+    <!-- main.js fills this empty box with one card per resort -->
+    <main id="resorts"></main>
+
+    <footer>
+      Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a>.
+      Scores are a rough guide, so check the resort's official report before you go.
+    </footer>
+
+    <!-- type="module" lets main.js use import. All the logic lives in src/. -->
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

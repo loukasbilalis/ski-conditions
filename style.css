@@ -1,0 +1,99 @@
+/* style.css: how the page looks. No logic here. */
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f1f5f9;
+  color: #0f172a;
+  margin: 0;
+  padding: 16px;
+  line-height: 1.4;
+}
+
+header,
+main,
+footer {
+  max-width: 900px;
+  margin: 0 auto 16px;
+}
+
+h1 {
+  margin-bottom: 4px;
+}
+
+/* One white box per resort */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.card .meta {
+  color: #475569;
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+}
+
+.card h3 {
+  margin: 16px 0 6px;
+  font-size: 1rem;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+/* The row of hours: 8 columns on a wide screen, 4 on a phone */
+.hours {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .hours {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.hour {
+  border-radius: 8px;
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.hour .score {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Score colours. The number is always shown too, not only the colour. */
+.good {
+  background: #bbf7d0;
+}
+.ok {
+  background: #fef08a;
+}
+.poor {
+  background: #fecaca;
+}
+
+.legend .swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin: 0 4px 0 12px;
+  vertical-align: middle;
+}
+
+footer {
+  font-size: 0.85rem;
+  color: #475569;
+}
