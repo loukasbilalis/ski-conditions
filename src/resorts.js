@@ -10,8 +10,8 @@
 //               to adjust the temperature for mountain height.
 //
 // NOTE: elevations for Parnassos (2250), Kalavryta (2340) and Vasilitsa (2249)
-// come from snowreport.gr. Velouchi (2000) is still my estimate. Coordinates are approximate.
-// and edit the numbers if you know better values.
+// come from snowreport.gr. Velouchi (2000) is still my estimate.
+// Coordinates are approximate. Edit the numbers if you know better values.
 
 export const resorts = [
   {
