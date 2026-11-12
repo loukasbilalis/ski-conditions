@@ -18,8 +18,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaTool } from "@anthropic-ai/sdk/helpers/beta/json-schema";
 import { tools } from "../src/tools.js";
 
-// Which Claude model to use.
-const MODEL = "claude-opus-5-5";
+// Which Claude model to use. Haiku is small, fast and cheap, which is plenty for
+// looking things up with tools and summarising the results. If its answers are not
+// good enough, try "claude-sonnet-5-5" or "claude-opus-5-5" here.
+const MODEL = "claude-haiku-5-5";
 
 // The instructions that set up the agent's behaviour.
 const SYSTEM_PROMPT = `You help people decide when and where to ski at four Greek ski resorts, using tools that return a weather forecast and a conditions score.
@@ -59,9 +61,6 @@ try {
     max_tokens: 16000,
     // How hard Claude thinks. "medium" is plenty for looking up data and summarising it.
     output_config: { effort: "medium" },
-    // If a safety filter wrongly declines the request, retry on a fallback model on the server.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
     system: SYSTEM_PROMPT,
     tools: runnableTools,
     messages: [{ role: "user", content: question }],
