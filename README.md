@@ -11,12 +11,37 @@ weather data from [Open-Meteo](https://open-meteo.com/).
 - `src/weather.js` - `getWeather(resort)` returns hourly weather (yesterday, today, tomorrow)
 - `src/scoring.js` - `scoreForecast(hours, resort)` and `scoreConditions(hour, context, settings)`
 - `src/summary.js` - `summarizeDay()` / `summarizeForecast()`: best window, worst hour, vetoes
+- `src/tools.js` - the functions as AI agent tools (`createTools()`, `runTool()`)
+- `agent/run.js` - a demo agent that uses those tools with Claude
 - `src/main.js` - the only file that touches the web page
 - `index.html`, `style.css` - the page
 - `test.js` - run `node test.js` to check the logic
 
 The weather, scoring and summary functions don't depend on the page, so they can be
 reused later as tools for an AI agent.
+
+## AI agent tools
+
+`src/tools.js` packages the functions as tools for an AI agent. It uses no AI library:
+each tool is a name, a description, a JSON input schema and a `run()` function.
+
+| Tool | What it returns |
+|---|---|
+| `list_resorts` | Resort ids, names, base altitude, lift hours, wind limit, minimum snow depth |
+| `get_hourly_weather` | Raw hourly forecast for one resort during lift hours (today and tomorrow) |
+| `score_hourly_conditions` | Hourly 0-100 scores with vetoes and the weakest factor (optionally every factor) |
+| `get_daily_summary` | Per day: best 3-hour window, worst hour and its cause, veto reasons |
+
+`agent/run.js` is a demo that connects them to Claude with the SDK's tool runner:
+
+```
+cd agent
+npm install
+export ANTHROPIC_API_KEY="your-key"
+node run.js "Which resort has the best conditions tomorrow morning?"
+```
+
+The agent has its own `package.json`, so the website itself still has no dependencies.
 
 ## How an hour is scored
 

@@ -1,0 +1,11 @@
+{
+  "name": "ski-conditions-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node run.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  }
+}

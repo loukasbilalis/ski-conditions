@@ -266,18 +266,31 @@ export function scoreConditions(hour, context = {}, settings = {}, config = CONF
  */
 export function scoreForecast(hours, resort, config = CONFIG) {
   const settings = resolveSettings(resort, config);
+  return liftHourIndexes(hours, settings).map((index) =>
+    scoreConditions(hours[index], buildContext(hours, index, config), settings, config)
+  );
+}
+
+/**
+ * Which positions in the list are lift-operating hours that can be scored?
+ * (Inside the resort's lift hours, and with the previous day present in the list.)
+ * Used by scoreForecast, and by other code that needs the same hours.
+ *
+ * @param {Array} hours     The full list from getWeather().
+ * @param {object} settings From resolveSettings().
+ * @returns {number[]} Positions (indexes) into `hours`, in time order.
+ */
+export function liftHourIndexes(hours, settings) {
   const { start, end } = settings.liftHours;
   const dates = new Set(hours.map(dateOf));
-  const results = [];
+  const indexes = [];
 
   hours.forEach((hour, index) => {
     const h = hourOf(hour);
     if (h < start || h > end) return; // outside lift hours
     if (!dates.has(previousDate(dateOf(hour)))) return; // no previous-day data to score with
-
-    const context = buildContext(hours, index, config);
-    results.push(scoreConditions(hour, context, settings, config));
+    indexes.push(index);
   });
 
-  return results;
+  return indexes;
 }
