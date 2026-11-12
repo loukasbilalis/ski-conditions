@@ -3,6 +3,12 @@
 // It knows nothing about web pages, so it also works in Node and
 // can later be used as a tool for an AI agent.
 
+import { getMockWeekendWeather } from "./mockWeekend.js"; // TEMPORARY MOCK
+
+// TEMPORARY MOCK: true = use the made-up weekend forecast in mockWeekend.js
+// instead of real Open-Meteo data. Set to false to get real weather again.
+const USE_MOCK_WEEKEND = true;
+
 const API_URL = "https://api.open-meteo.com/v1/forecast";
 
 // How many days to fetch from today on: today and tomorrow = 2 days.
@@ -32,6 +38,8 @@ const PAST_DAYS = 1;
  * }>>} Any value can be null if Open-Meteo has no data for it.
  */
 export async function getWeather(resort) {
+  if (USE_MOCK_WEEKEND) return getMockWeekendWeather(resort); // TEMPORARY MOCK
+
   // Step 1: build the web address (URL) with our question in it.
   const params = new URLSearchParams({
     latitude: resort.latitude,
