@@ -30,6 +30,37 @@ const resortIdProperty = {
 const round = (value, digits = 1) =>
   value === null || value === undefined ? null : Math.round(value * 10 ** digits) / 10 ** digits;
 
+// "48 km/h", or "no data" when the value is missing.
+const withUnit = (value, text, digits = 0) => (value === null || value === undefined ? "no data" : `${round(value, digits)} ${text}`);
+
+// The actual weather measurement behind a factor score, as text. A factor score
+// is NOT a weather value (a LOW wind score means STRONG wind), so every factor
+// is returned together with its reading, and the AI doesn't have to guess.
+function readingFor(factorId, inputs) {
+  switch (factorId) {
+    case "wind":
+      return `gusts ${withUnit(inputs.windGusts, "km/h")}`;
+    case "visibility":
+      return `visibility ${withUnit(inputs.visibility, "m")}, humidity ${withUnit(inputs.humidity, "%")}`;
+    case "rain":
+      return `rain + showers ${withUnit(inputs.rainPlusShowers, "mm/h", 1)}`;
+    case "coldComfort":
+      return `feels like ${withUnit(inputs.apparentTemperature, "°C", 1)}`;
+    case "morningIce":
+      return inputs.morningIceMin === null ? "no morning ice risk this hour" : `overnight minimum ${withUnit(inputs.morningIceMin, "°C", 1)}`;
+    case "snowQuality":
+      return `temperature ${withUnit(inputs.temperature, "°C", 1)}`;
+    case "snowDepth":
+      return `snow depth ${withUnit(inputs.snowDepth, "m", 2)}`;
+    case "currentSnowfall":
+      return `snowfall ${withUnit(inputs.snowfall, "cm/h", 1)}`;
+    case "freshSnow":
+      return `${withUnit(inputs.freshSnow24, "cm", 1)} of snow in the last 24 h`;
+    default:
+      return "";
+  }
+}
+
 /**
  * Build the tools.
  *
@@ -95,7 +126,7 @@ export function createTools({ getWeather = fetchOpenMeteo, cacheMinutes = 10 } =
         "Get the raw hourly weather forecast for one resort, for today and tomorrow, during lift hours only " +
         "(local Greek time). Use this when the user asks about actual weather values such as temperature, " +
         "wind gusts, visibility, rain or snow. For how GOOD the conditions are, use score_hourly_conditions instead. " +
-        "Data comes from Open-Meteo and is a forecast, not an observation.",
+        "Data comes from Open-Meteo and is a forecast, not an observation. The first date returned is today.",
       input_schema: {
         type: "object",
         properties: { resort_id: resortIdProperty },
@@ -146,7 +177,12 @@ export function createTools({ getWeather = fetchOpenMeteo, cacheMinutes = 10 } =
         "Scores are for beginner lessons and casual skiing with young children. Each hour has a score from " +
         "0 (terrible) to 100 (excellent), any hard vetoes, and the weakest factor. " +
         "A veto means the score is forced to 0 (for example gusts at the lift limit, rain, very low " +
-        "visibility, extreme cold, or too little snow). Set include_factors to true to also get every factor's score.",
+        "visibility, extreme cold, or too little snow). " +
+        "IMPORTANT: every factor score is 0-100 where HIGHER IS BETTER. It is not a weather measurement: " +
+        "a LOW wind score means STRONG wind. Each factor comes with a 'reading' giving the actual " +
+        "measurement (for example 'gusts 48 km/h'); use the reading, never the score, when you state a weather value. " +
+        "Set include_factors to true to get every factor's score and reading. Use that when asked WHY an hour scored as it did. " +
+        "The first date returned is today.",
       input_schema: {
         type: "object",
         properties: {
@@ -168,11 +204,16 @@ export function createTools({ getWeather = fetchOpenMeteo, cacheMinutes = 10 } =
             time: r.time,
             score: r.score,
             vetoes: r.vetoes.map((v) => v.label),
-            weakest_factor: r.worstFactor ? { name: r.worstFactor.label, score: round(r.worstFactor.score, 0) } : null,
+            weakest_factor: r.worstFactor
+              ? { name: r.worstFactor.label, score: round(r.worstFactor.score, 0), reading: readingFor(r.worstFactor.id, r.inputs) }
+              : null,
             ...(input.include_factors
               ? {
                   factors: Object.fromEntries(
-                    Object.entries(r.factors).map(([id, value]) => [CONFIG.factors[id].label, round(value, 0)])
+                    Object.entries(r.factors).map(([id, value]) => [
+                      CONFIG.factors[id].label,
+                      { score: round(value, 0), reading: readingFor(id, r.inputs) },
+                    ])
                   ),
                 }
               : {}),
@@ -189,7 +230,7 @@ export function createTools({ getWeather = fetchOpenMeteo, cacheMinutes = 10 } =
         "Summarise each day (today and tomorrow) for one resort: the best consecutive window of lift hours " +
         "with its average score, the worst hour and what caused it, and which vetoes occurred and for how many hours. " +
         "Use this to answer questions like 'when is the best time to ski tomorrow?' or 'is it worth going today?'. " +
-        "Days are not averaged into a single score on purpose.",
+        "Days are not averaged into a single score on purpose. The first date returned is today.",
       input_schema: {
         type: "object",
         properties: { resort_id: resortIdProperty },

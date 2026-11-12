@@ -186,14 +186,25 @@ const scoreOut = await byName.score_hourly_conditions.run({ resort_id: "parnasso
 check("score_hourly_conditions: 16 hours, scores match scoreForecast", scoreOut.hours.length === 16 && scoreOut.hours[0].score === scoreForecast(makeSeries(), resorts[0])[0].score);
 check("...factors are left out by default", scoreOut.hours[0].factors === undefined);
 const withFactors = await byName.score_hourly_conditions.run({ resort_id: "parnassos", include_factors: true });
-check("...and included with include_factors: true", typeof withFactors.hours[0].factors["Wind (gusts)"] === "number");
+check(
+  "...and included with include_factors: true, each with a score and a reading",
+  typeof withFactors.hours[0].factors["Wind (gusts)"].score === "number" && typeof withFactors.hours[0].factors["Wind (gusts)"].reading === "string"
+);
+check("...the wind reading gives the real gust speed, not the score (10 km/h gusts)", withFactors.hours[0].factors["Wind (gusts)"].reading === "gusts 10 km/h", withFactors.hours[0].factors["Wind (gusts)"].reading);
+check(
+  "...the weakest factor also comes with its reading (first hour: morning ice, overnight minimum -6 °C)",
+  scoreOut.hours[0].weakest_factor.name === "Morning ice" && scoreOut.hours[0].weakest_factor.reading === "overnight minimum -6 °C",
+  JSON.stringify(scoreOut.hours[0].weakest_factor)
+);
+check("...and the tool description warns that a low factor score is not a low reading", /HIGHER IS BETTER/.test(byName.score_hourly_conditions.description));
 
 const dailyOut = await byName.get_daily_summary.run({ resort_id: "parnassos" });
 check("get_daily_summary: 2 days, each with a 3-hour best window", dailyOut.days.length === 2 && dailyOut.days.every((d) => d.best_window.hours === 3));
 
 const sizes = [weatherOut, scoreOut, withFactors, dailyOut].map((o) => JSON.stringify(o).length);
 console.log(`       output sizes in characters: weather ${sizes[0]}, scores ${sizes[1]}, scores+factors ${sizes[2]}, summary ${sizes[3]}`);
-check("outputs stay compact (under 8000 characters each)", sizes.every((s) => s < 8000));
+check("default outputs stay compact (under 8000 characters each)", [sizes[0], sizes[1], sizes[3]].every((s) => s < 8000));
+check("the detailed factor output stays under 14000 characters (about 4000 tokens)", sizes[2] < 14000);
 
 // Errors come back as data the AI can read, never as crashes.
 const badResort = await runTool("score_hourly_conditions", { resort_id: "olympus" }, toolList);
