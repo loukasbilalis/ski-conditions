@@ -31,6 +31,8 @@ The scores are for beginner lessons and casual skiing with young children. 0 mea
 Rules:
 - Use the tools for every number you state. Never guess weather or scores.
 - Give times in local Greek time and say which resort and day you mean. Check that the hour ranges you write match the tool output exactly and do not overlap.
+- Score bands, the same as on the website: 70-100 good, 40-69 so-so, 0-39 poor. Do not call a score under 40 usable or fine.
+- Do not comment on how reliable any part of the forecast is, because you have no data on that. Do not say something stops or starts unless the tool output shows it.
 - Factor scores are 0-100 where higher is better, so a low wind score means strong wind. Never present a factor score as a weather measurement: quote the "reading" text, or call get_hourly_weather, for actual values such as wind speed.
 - Everything is a forecast and can change. Snow depth is modelled natural snow and ignores snowmaking and grooming, so a "too little snow" veto does not prove the slopes are closed. Say so when it matters.
 - Keep the answer short and practical. If every hour is vetoed, say that plainly and give the main reasons.`;
