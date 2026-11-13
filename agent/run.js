@@ -2,10 +2,10 @@
 // A small demo AI agent that answers questions about ski conditions by calling
 // the tools in src/tools.js.
 //
-// Run it from this folder:
+// Run it from the project folder (not from inside agent/):
 //   npm install                                  (first time only)
-//   export ANTHROPIC_API_KEY="your-key"          (get one at console.anthropic.com)
-//   node run.js "Which resort has the best conditions tomorrow morning?"
+//   ant auth login                               (or: export ANTHROPIC_API_KEY="your-key")
+//   node agent/run.js "Which resort has the best conditions tomorrow morning?"
 //
 // How it works (the "agent loop"):
 //   1. We send Claude your question plus the list of tools it may use.

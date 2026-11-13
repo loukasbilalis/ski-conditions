@@ -70,7 +70,7 @@ export function buildSystemPrompt({ now = new Date(), mock = false } = {}) {
   if (mock) {
     lines.push(
       ``,
-      `DEMO MODE: the tools are returning made-up demo weather for a sample weekend, not a real forecast. Say this clearly at the start of your answer.`,
+      `DEMO MODE: the tools are returning made-up demo weather for a sample weekend, not a real forecast. Begin your answer with one short, natural sentence in the user's language saying this is demo data and not a real forecast. Say it only once, and do not use the words "DEMO MODE" as a label.`,
       `The tool descriptions say "the first date returned is today". In demo mode that is not true: ignore it, and refer to days by the dates shown in the tool results. If the user says "today" or "tomorrow", explain that the demo data covers only the dates in the results.`
     );
   } else {

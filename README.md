@@ -12,10 +12,15 @@ weather data from [Open-Meteo](https://open-meteo.com/).
 - `src/scoring.js` - `scoreForecast(hours, resort)` and `scoreConditions(hour, context, settings)`
 - `src/summary.js` - `summarizeDay()` / `summarizeForecast()`: best window, worst hour, vetoes
 - `src/tools.js` - the functions as AI agent tools (`createTools()`, `runTool()`)
+- `agent/prompt.js` - the AI's instructions (system prompt), shared by the demo agent and the chatbot
 - `agent/run.js` - a demo agent that uses those tools with Claude
+- `api/chat.js` - the chatbot's back end (a Vercel serverless function)
+- `mock/weekend.js` - made-up demo weather for a sample weekend (used by the page and the chatbot)
+- `dev-server.js` - a small local server for trying the site and the chatbot API
 - `src/main.js` - the only file that touches the web page
 - `index.html`, `style.css` - the page
-- `test.js` - run `node test.js` to check the logic
+- `test.js` - run `node test.js` to check the scoring logic
+- `test-chat.js` - run `node test-chat.js` to check the chatbot API (offline, free)
 
 The weather, scoring and summary functions don't depend on the page, so they can be
 reused later as tools for an AI agent.
@@ -35,13 +40,36 @@ each tool is a name, a description, a JSON input schema and a `run()` function.
 `agent/run.js` is a demo that connects them to Claude with the SDK's tool runner:
 
 ```
-cd agent
-npm install
-export ANTHROPIC_API_KEY="your-key"
-node run.js "Which resort has the best conditions tomorrow morning?"
+npm install                       # once, in the project folder
+ant auth login                    # or: export ANTHROPIC_API_KEY="your-key"
+node agent/run.js "Which resort has the best conditions tomorrow morning?"
 ```
 
-The agent has its own `package.json`, so the website itself still has no dependencies.
+## The chatbot API (`api/chat.js`)
+
+`POST /api/chat` with `{ "messages": [{ "role": "user", "content": "..." }], "mock": false }`
+returns `{ "reply": "...", "toolsUsed": ["get_daily_summary(parnassos)"] }`.
+It asks Claude Haiku 5.5, runs the tools on the server (at most 5 rounds), and answers.
+Set `"mock": true` to use the demo weather in `mock/weekend.js` instead of real data.
+
+Limits (all in `LIMITS` at the top of `api/chat.js`): questions up to 500 characters,
+the last 10 messages, answers up to 600 tokens, 10 questions per 10 minutes per visitor
+(best effort: the counter lives in server memory), no streaming.
+
+**The API key** is read only from the `ANTHROPIC_API_KEY` environment variable. It is never in
+the browser code or in the repo.
+
+Try it on your computer (no Vercel account needed; it uses your `ant auth login`):
+
+```
+node dev-server.js
+curl -s localhost:3000/api/chat -H 'content-type: application/json' \
+  -d '{"messages":[{"role":"user","content":"Best resort on Saturday?"}],"mock":true}'
+```
+
+On Vercel, add `ANTHROPIC_API_KEY` under Project Settings, then Environment Variables
+(for both Production and Preview), and redeploy. Also set a monthly spending limit in the
+Anthropic console: this is a public endpoint that spends your credit.
 
 ## How an hour is scored
 
@@ -55,6 +83,7 @@ Per-resort wind limit, minimum snow depth and lift hours are set in `src/config.
 ## Run it locally
 
 ```
-node test.js                      # check the logic
-python3 -m http.server 8000       # then open http://localhost:8000
+node test.js                      # check the scoring logic (the last part needs internet)
+node test-chat.js                 # check the chatbot API (offline, free)
+node dev-server.js                # the site AND the chatbot API at http://localhost:3000
 ```
