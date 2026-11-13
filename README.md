@@ -17,8 +17,10 @@ weather data from [Open-Meteo](https://open-meteo.com/).
 - `api/chat.js` - the chatbot's back end (a Vercel serverless function)
 - `mock/weekend.js` - made-up demo weather for a sample weekend (used by the page and the chatbot)
 - `dev-server.js` - a small local server for trying the site and the chatbot API
-- `src/main.js` - the only file that touches the web page
+- `src/main.js` - the only file in `src/` that touches the web page
 - `index.html`, `style.css` - the page
+- `chat/chat.js`, `chat/chat.css` - the chat widget (floating 💬 button and panel)
+- `chat/chat-logic.js` - the widget's logic with no page code (builds requests, handles errors)
 - `test.js` - run `node test.js` to check the scoring logic
 - `test-chat.js` - run `node test-chat.js` to check the chatbot API (offline, free)
 
@@ -59,7 +61,17 @@ the last 10 messages, replies up to 1200 tokens (including Claude's hidden think
 **The API key** is read only from the `ANTHROPIC_API_KEY` environment variable. It is never in
 the browser code or in the repo.
 
-Try it on your computer (no Vercel account needed; it uses your `ant auth login`):
+## The chat widget and demo data
+
+The 💬 button (bottom right) opens a chat panel: three suggested questions, a "Thinking…" state,
+and a small grey line under each answer listing the tools that were used. On a phone it fills
+the screen. Open the site with `#chat` at the end of the address to open the chat straight away.
+
+**Demo data:** add `?mock=1` to the address (for example `http://localhost:3000/?mock=1`) and both
+the page and the chat use the made-up weather in `mock/weekend.js` instead of the real forecast.
+A warning banner shows while it is on. Real data returns when you remove `?mock=1`.
+
+Try the API on your computer (no Vercel account needed; it uses your `ant auth login`):
 
 ```
 node dev-server.js

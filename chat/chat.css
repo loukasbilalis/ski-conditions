@@ -1,0 +1,332 @@
+/* chat/chat.css: how the chat widget looks. No logic here. */
+
+/* Room at the bottom of the page, so the floating button never covers the footer text. */
+body {
+  padding-bottom: 88px;
+}
+
+/* Hidden on screen but still read by screen readers (used for the input's label). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- The floating button ---------- */
+.chat-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: white;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.chat-toggle:hover {
+  background: #1e40af;
+}
+
+.chat-toggle:focus-visible,
+.chat-close:focus-visible,
+.chat-chip:focus-visible,
+.chat-send:focus-visible,
+.chat-input:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+/* ---------- The panel ---------- */
+.chat-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 84px; /* just above the button */
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - 32px));
+  height: min(600px, calc(100vh - 110px));
+  height: min(600px, calc(100dvh - 110px));
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* The "hidden" attribute must win over display: flex above. */
+.chat-panel[hidden] {
+  display: none;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #1d4ed8;
+  color: white;
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef08a;
+  color: #713f12;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chat-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: white;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chat-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- Messages ---------- */
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain; /* scrolling here doesn't scroll the page behind */
+  background: #f8fafc;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+}
+
+.chat-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-bot,
+.chat-error {
+  align-self: flex-start;
+}
+
+.chat-bubble {
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap; /* keep the line breaks in the answers */
+  overflow-wrap: anywhere; /* never let a long word widen the panel */
+}
+
+.chat-user .chat-bubble {
+  background: #1d4ed8;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bot .chat-bubble {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-error .chat-bubble {
+  background: #fee2e2;
+  color: #991b1b;
+  border-bottom-left-radius: 4px;
+}
+
+/* The small grey "Tools used" line under a reply */
+.chat-tools {
+  margin-top: 3px;
+  padding: 0 4px;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* "Thinking..." with three bouncing dots */
+.chat-dots span {
+  display: inline-block;
+  animation: chat-bounce 1.2s infinite ease-in-out;
+}
+.chat-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.chat-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes chat-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-dots span {
+    animation: none;
+  }
+}
+
+/* ---------- Suggested questions ---------- */
+.chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 0;
+  background: #f8fafc;
+}
+
+.chat-chips[hidden] {
+  display: none;
+}
+
+.chat-chip {
+  padding: 7px 12px;
+  border: 1px solid #93c5fd;
+  border-radius: 999px;
+  background: white;
+  color: #1e40af;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-chip:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.chat-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- The question box ---------- */
+.chat-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px 4px;
+  background: #f8fafc;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  max-height: 110px;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 16px; /* 16px or more stops iPhones from zooming in when the box is tapped */
+  line-height: 1.3;
+  resize: none;
+}
+
+.chat-input:disabled {
+  background: #f1f5f9;
+}
+
+.chat-send {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: #1d4ed8;
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-send:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.chat-send:disabled {
+  background: #94a3b8;
+  cursor: default;
+}
+
+.chat-counter {
+  padding: 0 14px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.72rem;
+  text-align: right;
+  min-height: 0.9rem;
+}
+
+.chat-note {
+  margin: 0;
+  padding: 2px 14px 10px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* ---------- Small screens: the panel fills the whole screen ---------- */
+@media (max-width: 600px) {
+  .chat-panel {
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh; /* the visible height, even with the on-screen keyboard or address bar */
+    border-radius: 0;
+  }
+
+  /* The panel covers the button, and has its own close button. */
+  .chat-panel:not([hidden]) ~ .chat-toggle,
+  .chat-toggle[aria-expanded="true"] {
+    display: none;
+  }
+
+  .chat-message {
+    max-width: 92%;
+  }
+}
+
+/* Stops the page behind the full-screen chat from scrolling (set by chat.js on small screens). */
+html.chat-lock {
+  overflow: hidden;
+}

@@ -7,6 +7,7 @@ import fs from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { athensDate, buildSystemPrompt } from "./agent/prompt.js";
 import { LIMITS, createChatHandler, createRateLimiter, validateRequest } from "./api/chat.js";
+import { CHAT, SUGGESTIONS, askChat, buildRequestBody, errorMessageFor, toolsLine, trimHistory } from "./chat/chat-logic.js";
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -289,6 +290,51 @@ check(
   logged.error.some((line) => /rejected the credentials/.test(line)) && !logged.error.some((line) => /SECRETSECRET/.test(line)),
   JSON.stringify(logged.error)
 );
+
+// ===============================================================
+// The chat widget's logic (chat/chat-logic.js), with a fake fetch: no browser, no server.
+// ===============================================================
+console.log("\nChat widget - building requests:");
+const ten = Array.from({ length: 14 }, (_, i) => ({ role: i % 2 === 0 ? "user" : "assistant", content: `m${i}`, extra: "ignore me" }));
+const trimmed = trimHistory(ten);
+check("only the last 10 messages are sent, with just role and content", trimmed.length === 10 && trimmed[0].content === "m4" && !("extra" in trimmed[0]));
+check("the request body has the messages and a true/false mock flag", JSON.stringify(buildRequestBody([{ role: "user", content: "hi" }], true)) === '{"messages":[{"role":"user","content":"hi"}],"mock":true}' && buildRequestBody([], undefined).mock === false);
+check("the chat and the server agree on the 500-character limit", CHAT.maxChars === LIMITS.maxUserChars && CHAT.maxMessages === LIMITS.maxMessages);
+check("there are exactly 3 suggested questions, each within the limit", SUGGESTIONS.length === 3 && SUGGESTIONS.every((q) => q.length > 0 && q.length <= CHAT.maxChars));
+check("tools line: names joined; nothing when no tools were used", toolsLine(["a(x)", "b"]) === "Tools used: a(x), b" && toolsLine([]) === "" && toolsLine(undefined) === "");
+
+console.log("\nChat widget - talking to the server:");
+const jsonResponse = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
+let sent;
+const okFetch = async (url, options) => {
+  sent = { url, options };
+  return jsonResponse(200, { reply: "Hello there", toolsUsed: ["list_resorts", 42, "get_daily_summary(parnassos)"] });
+};
+const good = await askChat({ history: [{ role: "user", content: "hi" }], mock: true, fetchFn: okFetch });
+check("success: returns the reply and only the string tool names", good.ok && good.reply === "Hello there" && JSON.stringify(good.toolsUsed) === '["list_resorts","get_daily_summary(parnassos)"]', JSON.stringify(good));
+check("it POSTs JSON to /api/chat", sent.url === "/api/chat" && sent.options.method === "POST" && sent.options.headers["Content-Type"] === "application/json" && JSON.parse(sent.options.body).mock === true);
+
+const failure = async (fetchFn, extra = {}) => askChat({ history: [{ role: "user", content: "hi" }], mock: false, fetchFn, ...extra });
+const limitedRes = await failure(async () => jsonResponse(429, { error: "You have asked a lot of questions. Please try again in 10 minute(s)." }));
+check("a friendly message from the server is shown as it is", !limitedRes.ok && /asked a lot of questions/.test(limitedRes.error), JSON.stringify(limitedRes));
+check("a 500 without a message: 'temporarily unavailable'", /temporarily unavailable/.test((await failure(async () => jsonResponse(500, null))).error));
+check("a 404 (no API on this site yet): 'not available on this site yet'", /not available on this site yet/.test((await failure(async () => jsonResponse(404, null))).error));
+check("a reply that is not JSON does not crash", (await failure(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("bad json"); } }))).ok === false);
+check("a 200 without a reply is treated as a failure", (await failure(async () => jsonResponse(200, { oops: true }))).ok === false);
+check("network down: 'could not reach the server'", /could not reach the server/.test((await failure(async () => { throw new TypeError("Failed to fetch"); })).error));
+const hanging = (url, { signal }) => new Promise((_, reject) => signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" }))));
+check("no answer in time: 'took too long'", /took too long/.test((await failure(hanging, { timeoutMs: 20 })).error));
+check("a huge or odd server message is not shown (falls back to a generic one)", !/x{50}/.test((await failure(async () => jsonResponse(400, { error: "x".repeat(400) }))).error));
+check("errorMessageFor with nothing gives a generic message", /Something went wrong/.test(errorMessageFor()));
+
+console.log("\nChat widget - the files:");
+const withoutComments = (file) => fs.readFileSync(file, "utf8").replace(/\/\/.*$/gm, "");
+check(
+  "the chat code never uses innerHTML (text is always set with textContent), comments aside",
+  ["chat/chat.js", "chat/chat-logic.js"].every((file) => !/innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(/.test(withoutComments(file)))
+);
+check("the input font size is at least 16px (stops iPhones zooming in)", /font-size:\s*16px/.test(fs.readFileSync("chat/chat.css", "utf8")));
+check("index.html loads the chat script and stylesheet", /chat\/chat\.js/.test(fs.readFileSync("index.html", "utf8")) && /chat\/chat\.css/.test(fs.readFileSync("index.html", "utf8")));
 
 console.log("\nSecrets:");
 const sources = ["api/chat.js", "agent/prompt.js", "mock/weekend.js", "dev-server.js"];
