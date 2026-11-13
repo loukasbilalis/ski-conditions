@@ -17,25 +17,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaTool } from "@anthropic-ai/sdk/helpers/beta/json-schema";
 import { tools } from "../src/tools.js";
+import { buildSystemPrompt } from "./prompt.js"; // the instructions that set up the agent's behaviour
 
 // Which Claude model to use. Haiku is small, fast and cheap, which is plenty for
 // looking things up with tools and summarising the results. If its answers are not
 // good enough, try "claude-sonnet-5-5" or "claude-opus-5-5" here.
 const MODEL = "claude-haiku-5-5";
-
-// The instructions that set up the agent's behaviour.
-const SYSTEM_PROMPT = `You help people decide when and where to ski at four Greek ski resorts, using tools that return a weather forecast and a conditions score.
-
-The scores are for beginner lessons and casual skiing with young children. 0 means unusable and 100 means excellent. A "veto" forces an hour to 0, for example gusts at the lift limit, rain, very low visibility, extreme cold, or too little snow.
-
-Rules:
-- Use the tools for every number you state. Never guess weather or scores.
-- Give times in local Greek time and say which resort and day you mean. Check that the hour ranges you write match the tool output exactly and do not overlap.
-- Score bands, the same as on the website: 70-100 good, 40-69 so-so, 0-39 poor. Do not call a score under 40 usable or fine.
-- Do not comment on how reliable any part of the forecast is, because you have no data on that. Do not say something stops or starts unless the tool output shows it.
-- Factor scores are 0-100 where higher is better, so a low wind score means strong wind. Never present a factor score as a weather measurement: quote the "reading" text, or call get_hourly_weather, for actual values such as wind speed.
-- Everything is a forecast and can change. Snow depth is modelled natural snow and ignores snowmaking and grooming, so a "too little snow" veto does not prove the slopes are closed. Say so when it matters.
-- Keep the answer short and practical. If every hour is vetoed, say that plainly and give the main reasons.`;
 
 const question =
   process.argv.slice(2).join(" ") || "Which resort has the best conditions tomorrow, and when is the best time to ski there?";
@@ -64,7 +51,7 @@ try {
     max_tokens: 16000,
     // How hard Claude thinks. "medium" is plenty for looking up data and summarising it.
     output_config: { effort: "medium" },
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(), // built fresh each run, so it contains today's date
     tools: runnableTools,
     messages: [{ role: "user", content: question }],
     max_iterations: 10, // a safety stop, so a confused agent can't loop forever
