@@ -8,6 +8,32 @@ import { scoreForecast, resolveSettings } from "./scoring.js";
 import { summarizeForecast } from "./summary.js";
 import { CONFIG } from "./config.js";
 
+// Demo data: open the page with ?mock=1 to use made-up weather (mock/weekend.js)
+// instead of the real forecast. The chat widget reads the same switch, so the
+// page and the chat always show the same data. The demo file is only downloaded
+// when it is asked for.
+const useMock = new URLSearchParams(location.search).get("mock") === "1";
+const loadWeather = useMock ? (await import("../mock/weekend.js")).getMockWeather : getWeather;
+
+// Under the legend: a clear warning when demo data is on, or a link to switch it on.
+function showDemoNote() {
+  const note = document.getElementById("demo-note");
+  if (!note) return;
+  const link = document.createElement("a");
+  if (useMock) {
+    note.className = "demo-note demo-on";
+    note.textContent = "DEMO DATA: made-up weather for Sat 14 and Sun 15 Nov 2026, not a real forecast. ";
+    link.href = location.pathname;
+    link.textContent = "Back to real data";
+  } else {
+    note.textContent = "No snow right now? ";
+    link.href = "?mock=1";
+    link.textContent = "Try the demo data";
+  }
+  note.append(link);
+}
+showDemoNote();
+
 // Which colour class a score gets (the classes are defined in style.css).
 function scoreClass(score) {
   if (score === null) return "poor";
@@ -142,7 +168,7 @@ for (const resort of resorts) {
   document.getElementById("resorts").append(card);
 
   // The resorts load at the same time, and a failure in one does not stop the others.
-  getWeather(resort)
+  loadWeather(resort)
     .then((hours) => {
       status.remove();
       fillCard(card, scoreForecast(hours, resort));

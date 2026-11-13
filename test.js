@@ -228,8 +228,25 @@ check("with cacheMinutes: 0 every call downloads again", weatherDownloads === 2,
 
 // ---------------------------------------------------------------
 console.log("\nLive forecast (needs internet):");
+
+// The real Open-Meteo server sometimes times out for a moment, so try up to 3 times.
+async function getWeatherWithRetry(resort, attempts = 3) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await getWeather(resort);
+    } catch (error) {
+      if (attempt >= attempts) return null; // gave up: the caller reports it
+      await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+    }
+  }
+}
+
 for (const resort of resorts) {
-  const hours = await getWeather(resort);
+  const hours = await getWeatherWithRetry(resort);
+  if (hours === null) {
+    check(`${resort.name}: weather downloaded`, false, "could not reach Open-Meteo after 3 tries (check your internet connection)");
+    continue;
+  }
   const scored = scoreForecast(hours, resort);
   const days = summarizeForecast(scored);
   check(`${resort.name}: ${hours.length} hours fetched, ${scored.length} scored, ${days.length} days`, hours.length === 72 && scored.length === 16 && days.length === 2);

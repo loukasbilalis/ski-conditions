@@ -109,3 +109,19 @@ footer {
   font-size: 0.85rem;
   color: #475569;
 }
+
+/* The line under the legend: a link to the demo data, or a warning that demo data is on */
+.demo-note {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.demo-note.demo-on {
+  padding: 8px 12px;
+  border: 1px solid #c2410c;
+  border-radius: 8px;
+  background: #ffedd5;
+  color: #7c2d12;
+  font-weight: 600;
+}

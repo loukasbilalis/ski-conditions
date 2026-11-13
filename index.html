@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Greek Ski Conditions</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="chat/chat.css" />
   </head>
   <body>
     <header>
@@ -20,6 +21,8 @@
         <span class="swatch ok"></span> 40-69 so-so
         <span class="swatch poor"></span> 0-39 poor
       </p>
+      <!-- main.js fills this in: a demo-data warning, or a link to try the demo data -->
+      <p id="demo-note" class="demo-note"></p>
     </header>
 
     <!-- main.js fills this empty box with one card per resort -->
@@ -32,5 +35,7 @@
 
     <!-- type="module" lets main.js use import. All the logic lives in src/. -->
     <script type="module" src="src/main.js"></script>
+    <!-- The chat widget (the floating button and panel). -->
+    <script type="module" src="chat/chat.js"></script>
   </body>
 </html>
