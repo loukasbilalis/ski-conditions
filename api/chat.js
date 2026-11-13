@@ -23,7 +23,7 @@ import { buildSystemPrompt } from "../agent/prompt.js";
 // ---------------------------------------------------------------
 export const LIMITS = {
   model: "claude-haiku-5-5",
-  maxTokens: 600, // the longest answer Claude may write in one reply
+  maxTokens: 1200, // the longest reply Claude may write in one turn. Its hidden thinking counts too.
   maxUserChars: 500, // the longest question a user may send
   maxAssistantChars: 4000, // the longest earlier answer we accept back in the history
   maxMessages: 10, // only the last 10 messages are sent to Claude
@@ -192,11 +192,10 @@ export async function runConversation({ client, messages, mock, now = () => new 
       {
         model: LIMITS.model,
         max_tokens: LIMITS.maxTokens,
-        // Thinking is switched off. It is on by default, and Claude's hidden thinking counts
-        // towards max_tokens: with a 600-token limit it used almost all of it, so answers were
-        // cut off or empty (measured: 3 of 3 failed). Switched off, answers use about 350 tokens.
-        thinking: { type: "disabled" },
-        output_config: { effort: "low" }, // short, fast answers
+        // Claude's hidden thinking counts towards max_tokens. With a limit of 600 it used almost
+        // all of it (measured: 3 of 3 test answers were cut off or empty), so the limit is 1200.
+        // Effort "low" keeps the thinking short.
+        output_config: { effort: "low" },
         system,
         tools,
         messages: conversation,

@@ -53,7 +53,7 @@ It asks Claude Haiku 5.5, runs the tools on the server (at most 5 rounds), and a
 Set `"mock": true` to use the demo weather in `mock/weekend.js` instead of real data.
 
 Limits (all in `LIMITS` at the top of `api/chat.js`): questions up to 500 characters,
-the last 10 messages, answers up to 600 tokens, 10 questions per 10 minutes per visitor
+the last 10 messages, replies up to 1200 tokens (including Claude's hidden thinking), 10 questions per 10 minutes per visitor
 (best effort: the counter lives in server memory), no streaming.
 
 **The API key** is read only from the `ANTHROPIC_API_KEY` environment variable. It is never in
